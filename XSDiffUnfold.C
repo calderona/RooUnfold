@@ -67,6 +67,7 @@ const UInt_t Nsyst =2;
 Double_t Syst_data [Nsyst] = {1.3, 2.6}; // in % systematics on the efficiency from { PDF, Luminosity}
 Double_t Syst_pow [Nsyst] = {0.0}; // in %
 
+
 // Wjets --> normalization 28%
 // Vg --> scale 30% 
 // VV --> 4% UEPS + 5% QCD
@@ -88,7 +89,7 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 		  Bool_t    useDataDriven = false,
 		  Int_t     printLevel = 0,
 		  Bool_t    fiducial = true, 
-		  Int_t     differential = 0,
+		  Int_t     differential = 3,
 		  Bool_t    drawTheXS = true,
 		  Bool_t    drawRatio = 1,
 		  Int_t     verbose = 1,
@@ -97,6 +98,15 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 
 {
  
+
+  /// cancell - out some systematics if we compute the normalized distributions. 
+
+  if ( fiducial ) { 
+    Syst_data [0] = 0.0;  Syst_data [1] = 0.0;
+    Syst_back [0] = 0.0; Syst_back [1] = 0.0; Syst_back [2] = 0.0;
+    Syst_back [3] = 0.0; Syst_back [4] = 0.0; Syst_back [5] = 0.0;
+  }
+
 
   TH1::SetDefaultSumw2();
  
@@ -668,7 +678,7 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
       maxErr = errDown; 
     }
 
-    float total = sqrt((NData[ib][3]/10000)  + (maxErr*maxErr) + backgError [ib]*backgError [ib]); 
+    float total = sqrt((NData[ib][3]/10000) + (maxErr*maxErr) + backgError [ib]*backgError [ib]); 
 
     NData[ib][3]= total;
     NqqWW_pow [ib][3]= sqrt(NqqWW_pow [ib][3])/100;
@@ -689,7 +699,7 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 
   Double_t xsUnfold_fid = 5.47; 
   Double_t xsUnfold_fid_stat = 0.11; 
-  Double_t xsUnfold_fid_syst = 0.27; 
+  Double_t xsUnfold_fid_syst = 0.18;  //removing everything that can cancell 
   Double_t xsUnfold_fid_err = 0.29; 
 
 
@@ -912,15 +922,17 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 	if (fiducial) {
 
 	  double totalError_syst = sqrt(NData[i-1][3]*NData[i-1][3] + (xsUnfold_fid_syst*xsUnfold_fid_syst/(xsUnfold_fid*xsUnfold_fid))); 
-	  totalError = sqrt(totalError_syst*value * totalError_syst*value + error*error)*value;
+	  totalError = sqrt(totalError_syst*value * totalError_syst*value + error*error);
 
 	  systHisto->SetBinContent(i, value);
 	  systHisto->SetBinError(i, totalError);
 
+	  cout << NData[i-1][3]*100 << "  " << endl;
+
 
 	} else {  
 
-	  totalError = sqrt( NData[i-1][3]*value * NData[i-1][3]*value + error*error);
+	  totalError = sqrt( NData[i-1][3]*value * NData[i-1][3]*value +  error*error);
 
 	  cout << NData[i-1][3]*100 << "  " << endl;
 
@@ -996,7 +1008,7 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 	  Double_t statError = xsValue->GetBinError  (ibin);
 	  Double_t systError = systHisto->GetBinError(ibin);
 
-	  Double_t dataError = sqrt(statError*statError + systError*systError);
+	  Double_t dataError = systError;
 
 	  Double_t ratioValue_pow           = (powValue > 0) ? dataValue/powValue : 0.0;
 	  Double_t ratioError_pow           = (powValue > 0) ? dataError/powValue : 0.0;
