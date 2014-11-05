@@ -68,11 +68,13 @@ Double_t Syst_data [Nsyst] = {1.3, 2.6}; // in % systematics on the efficiency f
 Double_t Syst_pow [Nsyst] = {0.0}; // in %
 
 // Wjets --> normalization 28%
-// Vg --> scale 34% 
+// Vg --> scale 30% 
 // VV --> 4% UEPS + 5% QCD
 // H125 --> 8% UEPS + 20% QCD
+// TTbar nom --> 10 %
+// DY error --> 30 %
 
-Double_t Syst_back [4] = {0.28, 0.34, 0.06, 0.22};
+Double_t Syst_back [6] = {0.28, 0.30, 0.06, 0.22, 0.10, 0.30};
 
 //------------------------------------------------------------------------------
 // XS
@@ -82,10 +84,10 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 		  TString   channel = channel[OF],
 		  TString   directory = "rootfiles.2014Selection.4L.NewMC.NewLumi",
 		  //TString   directory = "rootfiles.Systematics.FromDaniel/nominals",
-		  TString   systematics = "141022_Systematics_v0.9",
+		  TString   systematics = "141030_Systematics_v1.0",
 		  Bool_t    useDataDriven = false,
 		  Int_t     printLevel = 0,
-		  Bool_t    fiducial = false, 
+		  Bool_t    fiducial = true, 
 		  Int_t     differential = 0,
 		  Bool_t    drawTheXS = true,
 		  Bool_t    drawRatio = 1,
@@ -172,8 +174,10 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
   // TFile* inputWW_GEN_pow     = new TFile("../rootfiles.Systematics.FromDaniel/jetEnergyScale_up/0jet/WWGEN/WW_GEN_0jet_pow_full.root");
 
   TFile* inputWW_GEN_pow     = new TFile("files/WW_GEN_0jet_pow_gg_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root"); //for doing unfolding
-  TFile* inputWW_GEN_mad     = new TFile("files/WW_GEN_0jet_mad_gg_full_JetGenVeto_Eff_NNLOXsec_NewLumi.root"); //for doing unfolding
-  TFile* inputWW_GEN_mcnlo   = new TFile("files/WW_GEN_0jet_mcnlo_gg_full_JetGenVeto_Eff_NNLOXsec_NewLumi.root"); //for doing unfolding
+  //TFile* inputWW_GEN_mad     = new TFile("files/WW_GEN_0jet_mad_gg_full_JetGenVeto_Eff_NNLOXsec_NewLumi.root"); //for doing unfolding
+  //TFile* inputWW_GEN_mcnlo   = new TFile("files/WW_GEN_0jet_mcnlo_gg_full_JetGenVeto_Eff_NNLOXsec_NewLumi.root"); //for doing unfolding
+  TFile* inputWW_GEN_mad     = new TFile("files/WW_GEN_0jet_mad_gg_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root"); //for doing unfolding
+  TFile* inputWW_GEN_mcnlo   = new TFile("files/WW_GEN_0jet_mcnlo_gg_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root"); //for doing unfolding
 
 
   //----------------------------------------------------------------------------
@@ -232,8 +236,15 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
     genDistribution = "hInclusive_GEN";
     kreg = 3; 
     syst = new TFile(systematics+"/syst_Inclusive.root");
- 
-  }
+    //syst = new TFile(systematics+"/syst_Inclusive_leptonEfficiency.root");
+    //syst = new TFile(systematics+"/syst_Inclusive_JER.root");
+    //syst = new TFile(systematics+"/syst_Inclusive_jetEnergyScale.root");
+    //syst = new TFile(systematics+"/syst_Inclusive_metResolution.root");
+    //syst = new TFile(systematics+"/syst_Inclusive_electroScale.root");
+    //syst = new TFile(systematics+"/syst_Inclusive_muonScale.root");
+    //syst = new TFile(systematics+"/syst_Inclusive_electronResolution.root");
+
+}
  
 
   TKey *key = inputWW->FindKey(distribution);
@@ -323,6 +334,14 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
   //initialize ML unfolding
   //RooUnfoldInvert unfold(responseFinal, WWdata);
  
+ 
+  // ----> Choose error treatment::  
+  //       0: Errors are the square root of the bin content
+  //       1: Errors from the diagonals of the covariance matrix given by the unfolding 
+  //          (variance values) 
+  //       2: Errors from the covariance matrix given by the unfolding
+  //       3: Errors from the covariance matrix from the variation of the results in toy MC tests
+  //==============================================================================
 
   //setup error type
   unfold.SetNToys(1000);
@@ -433,6 +452,7 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
     resM->Draw("COLZ");
 
 
+
   } // end verbose
 
 
@@ -444,6 +464,27 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 
 
   if (verbose > 0 ) { 
+
+
+    //For plotting error bars from unfolding.
+    
+    TCanvas * errors = new TCanvas("errors", "errors", 550, 550);
+    errors->cd();
+
+    TH1F* h1 = (TH1F*) unfold.Hreco((RooUnfold::ErrorTreatment)1); 
+    TH1F* h2 = (TH1F*) unfold.Hreco((RooUnfold::ErrorTreatment)2);
+    TH1F* h3 = (TH1F*) unfold.Hreco((RooUnfold::ErrorTreatment)3);
+    
+   
+    h1 ->SetFillColor(kRed);
+    h1->SetFillStyle(3004);
+    h1->Draw("E2");
+    h2->Draw("E1same");
+    h3 ->SetFillColor(kGreen);
+    h3->SetFillStyle(3006);
+    h3->Draw("E2same");
+
+
 
     TCanvas * residual = new TCanvas("residual", "residual", 550, 550);
     residual->cd();
@@ -538,6 +579,10 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
   Double_t NWZ [bin][4];
   Double_t NZZ [bin][4];
   Double_t NH125 [bin][4];
+  Double_t NTT [bin][4];
+  Double_t NTW [bin][4];
+  Double_t NDY [bin][4];
+
 
   TH1F* systUp;  TH1F* systDown;
   float backgError [bin]; 
@@ -578,9 +623,19 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
     NH125 [ib][0] = hNH125->GetBinContent(ib+1); NH125 [ib][1] = hNH125 ->GetBinWidth(ib+1);
     NH125 [ib][2] =   hNH125 ->GetBinError(ib+1); NH125 [ib][3] = NH125 [ib][0] *Syst_back[3];
 
+    NTT [ib][0] = hNTT->GetBinContent(ib+1); NTT [ib][1] = hNTT ->GetBinWidth(ib+1);
+    NTT [ib][2] =   hNTT ->GetBinError(ib+1); NTT [ib][3] = NTT [ib][0] *Syst_back[4];
+
+    NTW [ib][0] = hNTW->GetBinContent(ib+1); NTW [ib][1] = hNTW ->GetBinWidth(ib+1);
+    NTW [ib][2] =   hNTW ->GetBinError(ib+1); NTW [ib][3] = NTW [ib][0] *Syst_back[4];
+
+    NDY [ib][0] = hNDY->GetBinContent(ib+1)+ hNDYtautau->GetBinContent(ib+1); NDY [ib][1] = hNDY ->GetBinWidth(ib+1);
+    NDY [ib][2] =   hNDY ->GetBinError(ib+1); NDY [ib][3] = NDY [ib][0] *Syst_back[5];
+
 
     backgError [ib] =  sqrt(NWj [ib][3]*NWj [ib][3] + NWg [ib][3]*NWg [ib][3] + NWZ [ib][3]*NWZ [ib][3] 
-			    + NZZ [ib][3]*NZZ [ib][3] +  NH125 [ib][3]* NH125 [ib][3]) / (WWdata->GetBinContent(ib+1));
+			    + NZZ [ib][3]*NZZ [ib][3] +  NH125 [ib][3]* NH125 [ib][3] +  NTW [ib][3] *  NTW [ib][3] 
+			    + NTT [ib][3] * NTT [ib][3] +  NDY [ib][3] * NDY [ib][3] ) / (WWdata->GetBinContent(ib+1));
 
     
 
@@ -600,6 +655,8 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 
     if ( nom <= 0) continue;
 
+    cout << "ERROR!:  " << nom << "  " << up << "  " << down << endl;
+
     float errUp = up / nom;
     float errDown = down / nom;
 
@@ -611,7 +668,7 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
       maxErr = errDown; 
     }
 
-    float total =  sqrt((NData[ib][3]/10000) + (maxErr*maxErr) + backgError [ib]*backgError [ib]); 
+    float total = sqrt((NData[ib][3]/10000)  + (maxErr*maxErr) + backgError [ib]*backgError [ib]); 
 
     NData[ib][3]= total;
     NqqWW_pow [ib][3]= sqrt(NqqWW_pow [ib][3])/100;
@@ -630,19 +687,33 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
   
   TH1F *xsValue = (TH1F*) hNWW->Clone("xsValue");
 
+  Double_t xsUnfold_fid = 5.47; 
+  Double_t xsUnfold_fid_stat = 0.11; 
+  Double_t xsUnfold_fid_syst = 0.27; 
+  Double_t xsUnfold_fid_err = 0.29; 
+
+
 
   for (int ib=0; ib < bin; ib++) { 
     //cout<< NData[ib][0]<< endl;
-
-    xsUnfold [ib] = NData[ib][0] / (luminosity * NData[ib][1] );  
-    xsUnfold_stat [ib] = NData[ib][2] / (luminosity  * NData[ib][1] );
+    xsUnfold [ib] = NData[ib][0] / (luminosity * NData[ib][1] *BR_WW_to_lnln );  
+    xsUnfold_stat [ib] = NData[ib][2] / (luminosity  * NData[ib][1] *BR_WW_to_lnln );
  
-    xsValue->SetBinContent(ib+1, xsUnfold[ib]);
-    xsValue->SetBinError(ib+1, xsUnfold_stat [ib]);
+    double xsUnfold_stat_rel =  xsUnfold_stat[ib] / xsUnfold[ib]; 
+    double total_rel_error = sqrt ( xsUnfold_stat_rel*xsUnfold_stat_rel + (xsUnfold_fid_stat * xsUnfold_fid_stat/(xsUnfold_fid*xsUnfold_fid)));
+    double total_err = total_rel_error * xsUnfold [ib]/xsUnfold_fid;
 
 
+    if (fiducial) { 
+      xsValue->SetBinContent(ib+1, (xsUnfold[ib]/xsUnfold_fid));
+      xsValue->SetBinError(ib+1,  total_err);
+    } else {
+      xsValue->SetBinContent(ib+1, xsUnfold[ib]);
+      xsValue->SetBinError(ib+1, xsUnfold_stat [ib]);
+    }
 
   }
+
 
 
   // ---->  compute differential WW Xsec for MADGRAPH MC samples
@@ -654,14 +725,28 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 
   TH1F *xsValue_Madgraph = (TH1F*) hNWW->Clone("xsValue_mad");
 
+  Double_t xsMadgraph_fid = 5.12; // 4.95 (5.12 for NNLL); 
+  Double_t xsMadgraph_fid_err = 0.01;  // only statistical 
+
 
   for (int ib=0; ib < bin; ib++) { 
     
-    xsMadgraph[ib] = NqqWW_mad [ib][0] / (luminosity  * NqqWW_mad[ib][1]);
-    xsMadgraph_stat[ib] = NqqWW_mad [ib][2] / (luminosity * NqqWW_mad[ib][1]);
+    xsMadgraph[ib] = NqqWW_mad [ib][0] / (luminosity  * NqqWW_mad[ib][1] *BR_WW_to_lnln);
+    xsMadgraph_stat[ib] = NqqWW_mad [ib][2] / (luminosity * NqqWW_mad[ib][1] *BR_WW_to_lnln);
 
-    xsValue_Madgraph->SetBinContent(ib+1, xsMadgraph [ib]);
-    xsValue_Madgraph->SetBinError(ib+1, xsMadgraph_stat [ib]);
+
+    double xsMadgraph_stat_rel =  xsMadgraph_stat[ib] / xsMadgraph[ib]; 
+    double total_rel_error = sqrt ( xsMadgraph_stat_rel*xsMadgraph_stat_rel + (xsMadgraph_fid_err * xsMadgraph_fid_err/(xsMadgraph_fid*xsMadgraph_fid)));
+    double total_err = total_rel_error * xsMadgraph [ib]/xsMadgraph_fid;
+
+    if ( fiducial) {
+      xsValue_Madgraph->SetBinContent(ib+1, (xsMadgraph [ib]/xsMadgraph_fid));
+      xsValue_Madgraph->SetBinError(ib+1, total_err);
+    } else {
+      xsValue_Madgraph->SetBinContent(ib+1, xsMadgraph [ib]);
+      xsValue_Madgraph->SetBinError(ib+1, xsMadgraph_stat [ib]);
+    }
+
 
   }
 
@@ -674,16 +759,29 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 
   TH1F *xsValue_Powheg = (TH1F*) hNWW->Clone("xsValue_pow");
 
+  Double_t xsPowheg_fid = 5.29;  
+  Double_t xsPowheg_fid_err = 0.02; // only statistical 
+
+
 
   for (int ib=0; ib < bin; ib++) { 
     
-    xsPowheg[ib] = NqqWW_pow [ib][0] / (luminosity  * NqqWW_pow[ib][1]);
-    xsPowheg_stat[ib] = NqqWW_pow [ib][2] / (luminosity * NqqWW_pow[ib][1]);
+    xsPowheg[ib] = NqqWW_pow [ib][0] / (luminosity  * NqqWW_pow[ib][1] *BR_WW_to_lnln);
+    xsPowheg_stat[ib] = NqqWW_pow [ib][2] / (luminosity * NqqWW_pow[ib][1] *BR_WW_to_lnln);
 
     xsPowheg_tot[ib] = sqrt(NqqWW_pow [ib][3]*NqqWW_pow [ib][3]+xsPowheg_stat[ib]*xsPowheg_stat[ib]);
 
-    xsValue_Powheg->SetBinContent(ib+1, xsPowheg [ib]);
-    xsValue_Powheg->SetBinError(ib+1, xsPowheg_tot [ib]);
+    double xsPowheg_stat_rel =  xsPowheg_stat[ib] / xsPowheg[ib]; 
+    double total_rel_error = sqrt ( xsPowheg_stat_rel*xsPowheg_stat_rel + (xsPowheg_fid_err * xsPowheg_fid_err/(xsPowheg_fid*xsPowheg_fid)));
+    double total_err = total_rel_error * xsPowheg [ib]/xsPowheg_fid;
+
+    if (fiducial) {
+      xsValue_Powheg->SetBinContent(ib+1, (xsPowheg [ib]/xsPowheg_fid));
+      xsValue_Powheg->SetBinError(ib+1, total_err);
+    } else {
+      xsValue_Powheg->SetBinContent(ib+1, xsPowheg [ib]);
+      xsValue_Powheg->SetBinError(ib+1, xsPowheg_tot [ib]);
+    }
 
   }
 
@@ -697,15 +795,29 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
   TH1F *xsValue_MCnlo = (TH1F*) hNWW->Clone("xsValue_mcnlo");
 
 
+  Double_t xsMCnlo_fid = 5.25; // 5.20 (5.25 for NNLL) ; 
+  Double_t xsMCnlo_fid_err = 0.03; // 0.02 (0.03 for NNLL) ; // only statistical 
+
+
+
   for (int ib=0; ib < bin; ib++) { 
     
-    xsMCnlo[ib] = NqqWW_mcnlo [ib][0] / (luminosity  * NqqWW_mcnlo[ib][1]);
-    xsMCnlo_stat[ib] = NqqWW_mcnlo [ib][2] / (luminosity  * NqqWW_mcnlo[ib][1]);
+    xsMCnlo[ib] = NqqWW_mcnlo [ib][0] / (luminosity  * NqqWW_mcnlo[ib][1] *BR_WW_to_lnln);
+    xsMCnlo_stat[ib] = NqqWW_mcnlo [ib][2] / (luminosity  * NqqWW_mcnlo[ib][1] *BR_WW_to_lnln);
 
-    xsValue_MCnlo->SetBinContent(ib+1, xsMCnlo [ib]);
-    xsValue_MCnlo->SetBinError(ib+1, xsMCnlo_stat [ib]);
+    double xsMCnlo_stat_rel =  xsMCnlo_stat[ib] / xsMCnlo[ib]; 
+    double total_rel_error = sqrt ( xsMCnlo_stat_rel*xsMCnlo_stat_rel + (xsMCnlo_fid_err * xsMCnlo_fid_err/(xsMCnlo_fid*xsMCnlo_fid)));
+    double total_err = total_rel_error * xsMCnlo [ib]/xsMCnlo_fid;
 
-  }
+    if (fiducial ) {
+      xsValue_MCnlo->SetBinContent(ib+1, (xsMCnlo [ib]/xsMCnlo_fid));
+      xsValue_MCnlo->SetBinError(ib+1, total_err);
+    } else {
+      xsValue_MCnlo->SetBinContent(ib+1, xsMCnlo [ib]);
+      xsValue_MCnlo->SetBinError(ib+1, xsMCnlo_stat [ib]);
+    }  
+
+}
   
   if( drawTheXS) { 
 
@@ -749,7 +861,6 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
       xsValue_MCnlo->SetLineStyle(3);
 
 
-
       //-- Plot Data
 
       xsValue->SetMarkerStyle(kFullCircle);
@@ -763,6 +874,11 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
       if (differential == 1) xsValue->GetYaxis()->SetTitle("#frac{d#sigma}{dp_{T}(ll)}");
       if (differential == 2) xsValue->GetYaxis()->SetTitle("#frac{d#sigma}{dm_{#font[12]{ll}}}");
       if (differential == 3) xsValue->GetYaxis()->SetTitle("#frac{d#sigma}{d#Delta#phi_{ll}}");
+      
+      if (differential == 0 && fiducial) xsValue->GetYaxis()->SetTitle("#frac{1}{#sigma} #frac{d#sigma}{dp_{T}^{max}}");//("#frac{1}{#sigma} #frac{d#sigma}{dp_{T}^{max}}");
+      if (differential == 1 && fiducial) xsValue->GetYaxis()->SetTitle("#frac{1}{#sigma} #frac{d#sigma}{dp_{T}(ll)}");
+      if (differential == 2 && fiducial) xsValue->GetYaxis()->SetTitle("#frac{1}{#sigma} #frac{d#sigma}{dm_{#font[12]{ll}}}");
+      if (differential == 3 && fiducial) xsValue->GetYaxis()->SetTitle("#frac{1}{#sigma} #frac{d#sigma}{d#Delta#phi_{ll}}");
       
 
       xsValue->GetYaxis()->SetTitleOffset(1.6);
@@ -790,19 +906,34 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 
 	float value = xsValue->GetBinContent(i);
 	float error = xsValue->GetBinError(i);
+	
+	float totalError = 0; 
 
-	float totalError =  sqrt( NData[i-1][3]*value * NData[i-1][3]*value + error*error);
+	if (fiducial) {
 
-	cout << NData[i-1][3]*100 << "  " << endl;
+	  double totalError_syst = sqrt(NData[i-1][3]*NData[i-1][3] + (xsUnfold_fid_syst*xsUnfold_fid_syst/(xsUnfold_fid*xsUnfold_fid))); 
+	  totalError = sqrt(totalError_syst*value * totalError_syst*value + error*error)*value;
 
-	systHisto->SetBinContent(i, value);
-	systHisto->SetBinError(i, totalError);
+	  systHisto->SetBinContent(i, value);
+	  systHisto->SetBinError(i, totalError);
+
+
+	} else {  
+
+	  totalError = sqrt( NData[i-1][3]*value * NData[i-1][3]*value + error*error);
+
+	  cout << NData[i-1][3]*100 << "  " << endl;
+
+	  systHisto->SetBinContent(i, value);
+	  systHisto->SetBinError(i, totalError);
+
+	}
 
       }
 
      
       xsValue->GetXaxis()->SetTitleOffset(1.6);
-
+      //      xsValue->Draw();
       
       xsValue->Draw("p");
       xsValue_Powheg->Draw("histE1,same");
@@ -811,10 +942,14 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
       systHisto->Draw("e2, same");
       xsValue->Draw("p,same");
       
+
       if ( differential == 6) {
 	cout << "[DATA]   FIDUTIAL CROSS-SECTION:  " << xsValue->GetBinContent(2) << " +- " << systHisto->GetBinError(2) << endl;
 	cout << "[POWHEG] FIDUTIAL CROSS-SECTION:  " << xsValue_Powheg->GetBinContent(2) << " +- " << xsValue_Powheg->GetBinError(2) << endl;
+	cout << "[MADGRAPH] FIDUTIAL CROSS-SECTION:  " << xsValue_Madgraph->GetBinContent(2) << " +- " << xsValue_Madgraph->GetBinError(2) << endl;
+	cout << "[MCNLO] FIDUTIAL CROSS-SECTION:  " << xsValue_MCnlo->GetBinContent(2) << " +- " << xsValue_MCnlo->GetBinError(2) << endl;
       }
+
 
       // Legend
       //----------------------------------------------------------------------------
@@ -827,7 +962,7 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
       legend->AddEntry(xsValue_Powheg,   "Powheg", "L");
       legend->AddEntry(xsValue_Madgraph,   "Madgraph", "L");      
       legend->AddEntry(xsValue_MCnlo,   "MCNLO", "L");
-      
+ 
 
 
       // Put everything together
