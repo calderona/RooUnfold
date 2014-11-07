@@ -88,8 +88,8 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 		  TString   systematics = "141030_Systematics_v1.0",
 		  Bool_t    useDataDriven = false,
 		  Int_t     printLevel = 0,
-		  Bool_t    fiducial = true, 
-		  Int_t     differential = 3,
+		  Bool_t    fiducial = false, 
+		  Int_t     differential = 6,
 		  Bool_t    drawTheXS = true,
 		  Bool_t    drawRatio = 1,
 		  Int_t     verbose = 1,
@@ -103,8 +103,6 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 
   if ( fiducial ) { 
     Syst_data [0] = 0.0;  Syst_data [1] = 0.0;
-    Syst_back [0] = 0.0; Syst_back [1] = 0.0; Syst_back [2] = 0.0;
-    Syst_back [3] = 0.0; Syst_back [4] = 0.0; Syst_back [5] = 0.0;
   }
 
 
@@ -709,14 +707,14 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
     xsUnfold [ib] = NData[ib][0] / (luminosity * NData[ib][1] *BR_WW_to_lnln );  
     xsUnfold_stat [ib] = NData[ib][2] / (luminosity  * NData[ib][1] *BR_WW_to_lnln );
  
-    double xsUnfold_stat_rel =  xsUnfold_stat[ib] / xsUnfold[ib]; 
+    /*    double xsUnfold_stat_rel =  xsUnfold_stat[ib] / xsUnfold[ib]; 
     double total_rel_error = sqrt ( xsUnfold_stat_rel*xsUnfold_stat_rel + (xsUnfold_fid_stat * xsUnfold_fid_stat/(xsUnfold_fid*xsUnfold_fid)));
     double total_err = total_rel_error * xsUnfold [ib]/xsUnfold_fid;
-
+    */
 
     if (fiducial) { 
       xsValue->SetBinContent(ib+1, (xsUnfold[ib]/xsUnfold_fid));
-      xsValue->SetBinError(ib+1,  total_err);
+      xsValue->SetBinError(ib+1,  (xsUnfold_stat [ib]/xsUnfold_fid));
     } else {
       xsValue->SetBinContent(ib+1, xsUnfold[ib]);
       xsValue->SetBinError(ib+1, xsUnfold_stat [ib]);
@@ -744,14 +742,14 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
     xsMadgraph[ib] = NqqWW_mad [ib][0] / (luminosity  * NqqWW_mad[ib][1] *BR_WW_to_lnln);
     xsMadgraph_stat[ib] = NqqWW_mad [ib][2] / (luminosity * NqqWW_mad[ib][1] *BR_WW_to_lnln);
 
-
-    double xsMadgraph_stat_rel =  xsMadgraph_stat[ib] / xsMadgraph[ib]; 
+    /*    double xsMadgraph_stat_rel =  xsMadgraph_stat[ib] / xsMadgraph[ib]; 
     double total_rel_error = sqrt ( xsMadgraph_stat_rel*xsMadgraph_stat_rel + (xsMadgraph_fid_err * xsMadgraph_fid_err/(xsMadgraph_fid*xsMadgraph_fid)));
     double total_err = total_rel_error * xsMadgraph [ib]/xsMadgraph_fid;
+    */
 
     if ( fiducial) {
       xsValue_Madgraph->SetBinContent(ib+1, (xsMadgraph [ib]/xsMadgraph_fid));
-      xsValue_Madgraph->SetBinError(ib+1, total_err);
+      xsValue_Madgraph->SetBinError(ib+1, (xsMadgraph_stat [ib]/xsMadgraph_fid));
     } else {
       xsValue_Madgraph->SetBinContent(ib+1, xsMadgraph [ib]);
       xsValue_Madgraph->SetBinError(ib+1, xsMadgraph_stat [ib]);
@@ -781,13 +779,14 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 
     xsPowheg_tot[ib] = sqrt(NqqWW_pow [ib][3]*NqqWW_pow [ib][3]+xsPowheg_stat[ib]*xsPowheg_stat[ib]);
 
-    double xsPowheg_stat_rel =  xsPowheg_stat[ib] / xsPowheg[ib]; 
+    /*    double xsPowheg_stat_rel =  xsPowheg_stat[ib] / xsPowheg[ib]; 
     double total_rel_error = sqrt ( xsPowheg_stat_rel*xsPowheg_stat_rel + (xsPowheg_fid_err * xsPowheg_fid_err/(xsPowheg_fid*xsPowheg_fid)));
     double total_err = total_rel_error * xsPowheg [ib]/xsPowheg_fid;
+    */
 
     if (fiducial) {
       xsValue_Powheg->SetBinContent(ib+1, (xsPowheg [ib]/xsPowheg_fid));
-      xsValue_Powheg->SetBinError(ib+1, total_err);
+      xsValue_Powheg->SetBinError(ib+1, (xsPowheg_tot [ib]/xsPowheg_fid));
     } else {
       xsValue_Powheg->SetBinContent(ib+1, xsPowheg [ib]);
       xsValue_Powheg->SetBinError(ib+1, xsPowheg_tot [ib]);
@@ -815,13 +814,14 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
     xsMCnlo[ib] = NqqWW_mcnlo [ib][0] / (luminosity  * NqqWW_mcnlo[ib][1] *BR_WW_to_lnln);
     xsMCnlo_stat[ib] = NqqWW_mcnlo [ib][2] / (luminosity  * NqqWW_mcnlo[ib][1] *BR_WW_to_lnln);
 
-    double xsMCnlo_stat_rel =  xsMCnlo_stat[ib] / xsMCnlo[ib]; 
+    /* double xsMCnlo_stat_rel =  xsMCnlo_stat[ib] / xsMCnlo[ib]; 
     double total_rel_error = sqrt ( xsMCnlo_stat_rel*xsMCnlo_stat_rel + (xsMCnlo_fid_err * xsMCnlo_fid_err/(xsMCnlo_fid*xsMCnlo_fid)));
     double total_err = total_rel_error * xsMCnlo [ib]/xsMCnlo_fid;
+    */
 
     if (fiducial ) {
       xsValue_MCnlo->SetBinContent(ib+1, (xsMCnlo [ib]/xsMCnlo_fid));
-      xsValue_MCnlo->SetBinError(ib+1, total_err);
+      xsValue_MCnlo->SetBinError(ib+1, (xsMCnlo_stat [ib]/xsMCnlo_fid));
     } else {
       xsValue_MCnlo->SetBinContent(ib+1, xsMCnlo [ib]);
       xsValue_MCnlo->SetBinError(ib+1, xsMCnlo_stat [ib]);
@@ -915,40 +915,30 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 	Double_t binError = 0;
 
 	float value = xsValue->GetBinContent(i);
-	float error = xsValue->GetBinError(i);
+	float error = xsValue->GetBinError(i)/value;
 	
-	float totalError = 0; 
+       	float totalError = sqrt(NData[i-1][3]*NData[i-1][3] + error*error);
 
-	if (fiducial) {
+	systHisto->SetBinContent(i, value);
+	systHisto->SetBinError(i, totalError*value);
 
-	  double totalError_syst = sqrt(NData[i-1][3]*NData[i-1][3] + (xsUnfold_fid_syst*xsUnfold_fid_syst/(xsUnfold_fid*xsUnfold_fid))); 
-	  totalError = sqrt(totalError_syst*value * totalError_syst*value + error*error);
+	if (differential == 3 ) {
 
-	  systHisto->SetBinContent(i, value);
-	  systHisto->SetBinError(i, totalError);
-
-	  cout << NData[i-1][3]*100 << "  " << endl;
-
-
-	} else {  
-
-	  totalError = sqrt( NData[i-1][3]*value * NData[i-1][3]*value +  error*error);
-
-	  cout << NData[i-1][3]*100 << "  " << endl;
-
-	  systHisto->SetBinContent(i, value);
-	  systHisto->SetBinError(i, totalError);
-
+	  float errorbin1 = sqrt(totalError*totalError+0.041*0.041);
+	  float errorbin2 = sqrt(totalError*totalError+0.078*0.078);
+	
+	  systHisto->SetBinError(NBins-1, errorbin1*value);
+	  systHisto->SetBinError(NBins, errorbin2*value);
 	}
 
-      }
+	}
 
      
       xsValue->GetXaxis()->SetTitleOffset(1.6);
       //      xsValue->Draw();
       
       xsValue->Draw("p");
-      xsValue_Powheg->Draw("histE1,same");
+      xsValue_Powheg->Draw("hist,same");
       xsValue_Madgraph->Draw("hist,same");
       xsValue_MCnlo->Draw("hist,same");
       systHisto->Draw("e2, same");
