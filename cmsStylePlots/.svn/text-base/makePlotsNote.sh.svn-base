@@ -1,0 +1,31 @@
+#!/bin/sh
+
+root -l -q -b finalPlot.C+'(0,5,"p_{T}^{l max}","GeV","../histos/wwsel_ptmax_0jsf.root","wwsel_ptmax_0jsf",0,125,19.51)';
+root -l -q -b finalPlot.C+'(0,5,"p_{T}^{l max}","GeV","../histos/wwsel_ptmax_0jof.root","wwsel_ptmax_0jof",0,125,19.52)';
+root -l -q -b finalPlot.C+'(0,5,"p_{T}^{l max}","GeV","../histos/wwsel_ptmax_1jsf.root","wwsel_ptmax_1jsf",0,125,19.53)';
+root -l -q -b finalPlot.C+'(0,5,"p_{T}^{l max}","GeV","../histos/wwsel_ptmax_1jof.root","wwsel_ptmax_1jof",0,125,19.54)';
+
+root -l -q -b finalPlot.C+'(0,5,"p_{T}^{l min}","GeV","../histos/wwsel_ptmin_0jsf.root","wwsel_ptmin_0jsf",0,125,19.51)';
+root -l -q -b finalPlot.C+'(0,5,"p_{T}^{l min}","GeV","../histos/wwsel_ptmin_0jof.root","wwsel_ptmin_0jof",0,125,19.52)';
+root -l -q -b finalPlot.C+'(0,5,"p_{T}^{l min}","GeV","../histos/wwsel_ptmin_1jsf.root","wwsel_ptmin_1jsf",0,125,19.53)';
+root -l -q -b finalPlot.C+'(0,5,"p_{T}^{l min}","GeV","../histos/wwsel_ptmin_1jof.root","wwsel_ptmin_1jof",0,125,19.54)';
+
+root -l -q -b finalPlot.C+'(0,4,"m_{#font[12]{ll}}","GeV","../histos/wwsel_mll_0jsf.root","wwsel_mll_0jsf",0,125,19.51)';
+root -l -q -b finalPlot.C+'(0,4,"m_{#font[12]{ll}}","GeV","../histos/wwsel_mll_0jof.root","wwsel_mll_0jof",0,125,19.52)';
+root -l -q -b finalPlot.C+'(0,4,"m_{#font[12]{ll}}","GeV","../histos/wwsel_mll_1jsf.root","wwsel_mll_1jsf",0,125,19.53)';
+root -l -q -b finalPlot.C+'(0,4,"m_{#font[12]{ll}}","GeV","../histos/wwsel_mll_1jof.root","wwsel_mll_1jof",0,125,19.54)';
+
+root -l -q -b finalPlot.C+'(0,4,"m_{T}","GeV","../histos/wwsel_mt_0jsf.root","wwsel_mt_0jsf",0,125,19.51)';
+root -l -q -b finalPlot.C+'(0,4,"m_{T}","GeV","../histos/wwsel_mt_0jof.root","wwsel_mt_0jof",0,125,19.52)';
+root -l -q -b finalPlot.C+'(0,4,"m_{T}","GeV","../histos/wwsel_mt_1jsf.root","wwsel_mt_1jsf",0,125,19.53)';
+root -l -q -b finalPlot.C+'(0,4,"m_{T}","GeV","../histos/wwsel_mt_1jof.root","wwsel_mt_1jof",0,125,19.54)';
+
+root -l -q -b finalPlot.C+'(0,4,"p_{T}^{ll}","GeV","../histos/wwsel_ptll_0jsf.root","wwsel_ptll_0jsf",0,125,19.51)';
+root -l -q -b finalPlot.C+'(0,4,"p_{T}^{ll}","GeV","../histos/wwsel_ptll_0jof.root","wwsel_ptll_0jof",0,125,19.52)';
+root -l -q -b finalPlot.C+'(0,4,"p_{T}^{ll}","GeV","../histos/wwsel_ptll_1jsf.root","wwsel_ptll_1jsf",0,125,19.53)';
+root -l -q -b finalPlot.C+'(0,4,"p_{T}^{ll}","GeV","../histos/wwsel_ptll_1jof.root","wwsel_ptll_1jof",0,125,19.54)';
+
+root -l -q -b finalPlot.C+'(0,6,"#Delta #phi_{ll}","Degrees","../histos/wwsel_dphill_0jsf.root","wwsel_dphill_0jsf",0,125,19.51)';
+root -l -q -b finalPlot.C+'(0,6,"#Delta #phi_{ll}","Degrees","../histos/wwsel_dphill_0jof.root","wwsel_dphill_0jof",0,125,19.52)';
+root -l -q -b finalPlot.C+'(0,6,"#Delta #phi_{ll}","Degrees","../histos/wwsel_dphill_1jsf.root","wwsel_dphill_1jsf",0,125,19.53)';
+root -l -q -b finalPlot.C+'(0,6,"#Delta #phi_{ll}","Degrees","../histos/wwsel_dphill_1jof.root","wwsel_dphill_1jof",0,125,19.54)';

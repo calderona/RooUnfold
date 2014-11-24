@@ -1,0 +1,99 @@
+#include "TROOT.h"
+#include "TInterpreter.h"
+#include "TFile.h"
+#include "TCanvas.h"
+#include "TH1F.h"
+#include "TStyle.h"
+#include "TPad.h"
+#include "Math/QuantFuncMathCore.h"
+#include "TMath.h"
+#include "TGraphAsymmErrors.h"
+#include "StandardPlot.C"
+#include "TSystem.h"
+#include "CMS_lumi.C"
+
+void finalPlot(int nsel = 0, int ReBin = 1, TString XTitle = "N_{jets}", TString units = "", TString plotName = "histo_nice.root", TString outputName = "njets",
+                bool isLogY = false, int MassH = 160, double lumi = 4.6) {
+
+  gInterpreter->ExecuteMacro("GoodStyle.C");
+  gROOT->LoadMacro("StandardPlot.C");
+
+  TFile* file = new TFile(plotName.Data(), "read");
+
+  StandardPlot myPlot;
+  myPlot.setLumi(lumi);
+  myPlot.setLabel(XTitle.Data());
+  if     (lumi ==    4.9)  myPlot.addLabel("");
+  else if(lumi ==   19.4)  myPlot.addLabel("");
+  else if(lumi ==   24.4)  myPlot.addLabel("");
+  else if(lumi ==   4.91) myPlot.addLabel("");
+  else if(lumi ==  19.41) myPlot.addLabel("");
+  else if(lumi ==   4.92) myPlot.addLabel("");
+  else if(lumi ==  19.42) myPlot.addLabel("");
+  else if(lumi ==  19.51) myPlot.addLabel("0-jet DF");
+  else if(lumi ==  19.52) myPlot.addLabel("0-jet SF");
+  else if(lumi ==  19.53) myPlot.addLabel("1-jet DF");
+  else if(lumi ==  19.54) myPlot.addLabel("1-jet SF");
+  else                    myPlot.addLabel(""); 
+  myPlot.setUnits(units.Data());
+
+  TH1F* hWW     = (TH1F*)file->Get("histo0");
+  TH1F* hZJets  = (TH1F*)file->Get("histo1");
+  TH1F* hTop    = (TH1F*)file->Get("histo2");
+  TH1F* hVV     = (TH1F*)file->Get("histo3");
+  TH1F* hWJets  = (TH1F*)file->Get("histo4");
+  TH1F *hData   = (TH1F*)file->Get("histo5");
+  TH1F* hHWW    = (TH1F*)file->Get("histos");
+
+  double Bck = hHWW->GetSumOfWeights()+hZJets->GetSumOfWeights()+hTop->GetSumOfWeights()+hVV->GetSumOfWeights()+hWJets->GetSumOfWeights();
+  double scaleFactor   = 1.0;
+  double scaleFactorWW = (hData->GetSumOfWeights()-Bck)/(hWW->GetSumOfWeights());
+  printf("scaleFactor/scaleFactorWW: %f/%f\n",scaleFactor,scaleFactorWW);
+  hWW	->Scale(scaleFactorWW);
+  hZJets->Scale(scaleFactor);
+  hTop  ->Scale(scaleFactor);
+  hVV	->Scale(scaleFactor);
+  hWJets->Scale(scaleFactor);
+  if(nsel == 0 || nsel == 1){
+    if(hWW->GetSumOfWeights(   ) > 0) myPlot.setMCHist(iWW,    (TH1F*)hWW   ->Clone("hWW"));
+    if(hZJets->GetSumOfWeights() > 0) myPlot.setMCHist(iZJets, (TH1F*)hZJets->Clone("hZJets"));
+    if(hTop->GetSumOfWeights()   > 0) myPlot.setMCHist(iTop,   (TH1F*)hTop  ->Clone("hTop"));
+    if(hVV->GetSumOfWeights()	 > 0) myPlot.setMCHist(iVV,    (TH1F*)hVV   ->Clone("hVV")); 
+    if(hWJets->GetSumOfWeights() > 0) myPlot.setMCHist(iWJets, (TH1F*)hWJets->Clone("hWJets"));
+  }
+
+  hHWW->Scale(scaleFactor);
+  if(nsel != 1 && nsel != 3){
+    myPlot.setMCHist(iHWW, (TH1F*)hHWW->Clone("hHWW"));
+    myPlot._mass = MassH;
+  }
+
+  myPlot.setDataHist((TH1F*)hData->Clone("data"));
+
+  printf("%f + %f + %f + %f + %f = %f - %f - sig: %f\n",
+          hWW->GetSumOfWeights(),hZJets->GetSumOfWeights(),hTop->GetSumOfWeights(),
+  	  hVV->GetSumOfWeights(),hWJets->GetSumOfWeights(),
+	  hWW->GetSumOfWeights()+hZJets->GetSumOfWeights()+hTop->GetSumOfWeights()+
+	  hVV->GetSumOfWeights()+hWJets->GetSumOfWeights(),
+	  hData->GetSumOfWeights(),hHWW->GetSumOfWeights());
+
+  TCanvas* c1 = new TCanvas("c1", "c1");
+
+  if(isLogY == true) c1->SetLogy();
+  myPlot.Draw(ReBin);  // Can pass a rebin 
+  CMS_lumi( c1, 2, 12 );
+
+  char CommandToExec[300];
+  sprintf(CommandToExec,"mkdir -p plots");
+  gSystem->Exec(CommandToExec);  
+
+  if(strcmp(outputName.Data(),"")!=0){
+    char myOutputFile[300];
+    sprintf(myOutputFile,"plots/%s.eps",outputName.Data());
+    c1->SaveAs(myOutputFile);
+    sprintf(myOutputFile,"plots/%s.png",outputName.Data());
+    c1->SaveAs(myOutputFile);
+    sprintf(myOutputFile,"plots/%s.pdf",outputName.Data());
+    c1->SaveAs(myOutputFile);
+  }
+}
