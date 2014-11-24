@@ -74,23 +74,23 @@ void finalPlot(bool drawRatio = 1, int differential = 0, int nsel = 0, int ReBin
 
    TH1F *hpowError  = (TH1F*) xsValue_Powheg->Clone();
 
-   xsValue_Powheg->SetMarkerColor(kGreen+2);
+   xsValue_Powheg->SetMarkerColor(kAzure-3);
    xsValue_Powheg->SetLineWidth(1);
-   xsValue_Powheg->SetLineColor(kGreen+2);
+   xsValue_Powheg->SetLineColor(kBlue+2);
    xsValue_Powheg->SetMarkerStyle(22);
    xsValue_Powheg->SetMarkerSize(1.2);
   
 
    hpowError->SetLineWidth(0);
    hpowError->SetMarkerSize (      0);  
-   hpowError->SetFillColor  (kGreen-7);
+   hpowError->SetFillColor  (kAzure-9);
 
 
   //-- Plot Madgraph
 
   TH1F *hmadError  = (TH1F*) xsValue_Madgraph->Clone();
 
-  xsValue_Madgraph->SetMarkerColor(kMagenta);
+  xsValue_Madgraph->SetMarkerColor(kPink-9);
   xsValue_Madgraph->SetLineWidth(1);
   xsValue_Madgraph->SetLineStyle(1);
   xsValue_Madgraph->SetMarkerStyle(21);
@@ -98,7 +98,7 @@ void finalPlot(bool drawRatio = 1, int differential = 0, int nsel = 0, int ReBin
 
   hmadError->SetLineWidth(0);
   hmadError->SetMarkerSize (      0); 
-  hmadError->SetFillColor  (kMagenta-10);
+  hmadError->SetFillColor  (kPink+1);
 
 
   //-- Plot MCNLO
@@ -242,13 +242,13 @@ void finalPlot(bool drawRatio = 1, int differential = 0, int nsel = 0, int ReBin
     
    
     
-    ratio_mad      ->SetLineColor(kMagenta);
+    ratio_mad      ->SetLineColor(kPink-9);
     ratio_mad      ->SetMarkerSize(1.0);
     ratio_mad      ->SetLineWidth(1);
     ratio_mad      ->SetMarkerStyle(21);
     hratio_mad     ->SetLineWidth(0);
     hratio_mad     ->SetMarkerSize (      0);  
-    hratio_mad     ->SetFillColor  (kMagenta-10);
+    hratio_mad     ->SetFillColor  (kPink+1);
     hratio_mad     ->SetFillStyle  (1001);
     hratio_mad     ->Draw("e2,same");
     ratio_mad      ->Draw("e1p,same");
@@ -265,13 +265,13 @@ void finalPlot(bool drawRatio = 1, int differential = 0, int nsel = 0, int ReBin
     hratio_mcnlo    ->Draw("e2,same");
     ratio_mcnlo     ->Draw("ep,same");
 
-    ratio_pow      ->SetLineColor(kGreen+2);
+    ratio_pow      ->SetLineColor(kAzure-3);
     ratio_pow      ->SetMarkerSize(1.2);
     ratio_pow      ->SetLineWidth(1);
     ratio_pow      ->SetMarkerStyle(22);
     hratio_pow     ->SetLineWidth(0);
     hratio_pow     ->SetMarkerSize (      0);  
-    hratio_pow     ->SetFillColor  (kGreen-7);
+    hratio_pow     ->SetFillColor  (kAzure-9);
     hratio_pow     ->SetFillStyle  (1001);
     hratio_pow     ->Draw("e2,same");
     ratio_pow      ->Draw("e1p,same");
