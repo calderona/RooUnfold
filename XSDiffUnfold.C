@@ -64,7 +64,7 @@ enum {All, SF, OF, MuMu, EE, EMu, MuE};
 
 const UInt_t Nsyst =2;
 
-Double_t Syst_data [Nsyst] = {1.3, 2.6}; // in % systematics on the efficiency from { PDF, Luminosity}
+Double_t Syst_data [Nsyst] = {1.3, 2.9}; // in % systematics on the efficiency from { PDF, Luminosity}
 Double_t Syst_pow [Nsyst] = {0.0}; // in %
 
 
@@ -88,8 +88,8 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 		  TString   systematics = "141030_Systematics_v1.0",
 		  Bool_t    useDataDriven = false,
 		  Int_t     printLevel = 0,
-		  Bool_t    fiducial = false, 
-		  Int_t     differential = 6,
+		  Bool_t    fiducial = true, 
+		  Int_t     differential = 0,
 		  Bool_t    drawTheXS = true,
 		  Bool_t    drawRatio = 1,
 		  Int_t     verbose = 1,
@@ -123,6 +123,7 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
   Double_t NTop_incl [3];
 
   Double_t NDY_incl [3];
+
 
 
 
@@ -863,6 +864,7 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
       xsValue_Madgraph->SetMarkerColor(kRed);
       xsValue_Madgraph->SetLineWidth(2);
       xsValue_Madgraph->SetLineStyle(2);
+
    
       //-- Plot Madgraph
       xsValue_MCnlo->SetLineColor(kBlue);
@@ -931,16 +933,24 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 	  systHisto->SetBinError(NBins, errorbin2*value);
 	}
 
-	}
+	if ( differential == 6 && i == 2 ) {
+
+	  cout << "statistical error: " << error*value << "; syst error: " <<  NData[1][3]*value << endl;
+
+	}    
+	
+      }
 
      
       xsValue->GetXaxis()->SetTitleOffset(1.6);
       //      xsValue->Draw();
       
+
+
       xsValue->Draw("p");
       xsValue_Powheg->Draw("hist,same");
-      xsValue_Madgraph->Draw("hist,same");
-      xsValue_MCnlo->Draw("hist,same");
+      xsValue_Madgraph->Draw("histe2,same");
+      xsValue_MCnlo->Draw("histe2,same");
       systHisto->Draw("e2, same");
       xsValue->Draw("p,same");
       
@@ -1073,17 +1083,26 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
       if (differential == 3) addedDistribution = "dphill";
 
 
-      TString file = Form("pdf/wwxsec_%djet_%s_%s.pdf", njet, channel.Data(), addedDistribution.Data());
-
-      
+      TString file = Form("pdf/wwxsec_%djet_%s_%s.pdf", njet, channel.Data(), addedDistribution.Data());      
       canvas->SaveAs(file);
+
+      if (differential == 0 ) {
+	TFile* output = new TFile("XSLeadingPt_AN.root", "update");
+	output->cd();
+	xsValue->Write("xsValue", TObject::kWriteDelete );
+	xsValue_Powheg->Write("xsValue_Powheg", TObject::kWriteDelete );
+	xsValue_Madgraph->Write("xsValue_Madgraph", TObject::kWriteDelete );
+	xsValue_MCnlo->Write("xsValue_MCnlo", TObject::kWriteDelete );
+	systHisto->Write("systHisto", TObject::kWriteDelete );
+	output->Close();
+      }
+
 
   }
   
  
 
-  
-  }
+}
 
 
 
