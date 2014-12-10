@@ -89,7 +89,7 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 		  Bool_t    useDataDriven = false,
 		  Int_t     printLevel = 0,
 		  Bool_t    fiducial = true, 
-		  Int_t     differential = 0,
+		  Int_t     differential = 3,
 		  Bool_t    drawTheXS = true,
 		  Bool_t    drawRatio = 1,
 		  Int_t     verbose = 1,
@@ -182,11 +182,23 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 
   // TFile* inputWW_GEN_pow     = new TFile("../rootfiles.Systematics.FromDaniel/jetEnergyScale_up/0jet/WWGEN/WW_GEN_0jet_pow_full.root");
 
-  TFile* inputWW_GEN_pow     = new TFile("files/WW_GEN_0jet_pow_gg_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root"); //for doing unfolding
+  //TFile* inputWW_GEN_pow     = new TFile("files/WW_GEN_0jet_pow_gg_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root"); //for doing unfolding
+  
+
+  //TFile* inputWW_GEN_pow     = new TFile("files/final/WW_GEN_0jet_gg_pow_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root");
+
+
   //TFile* inputWW_GEN_mad     = new TFile("files/WW_GEN_0jet_mad_gg_full_JetGenVeto_Eff_NNLOXsec_NewLumi.root"); //for doing unfolding
   //TFile* inputWW_GEN_mcnlo   = new TFile("files/WW_GEN_0jet_mcnlo_gg_full_JetGenVeto_Eff_NNLOXsec_NewLumi.root"); //for doing unfolding
-  TFile* inputWW_GEN_mad     = new TFile("files/WW_GEN_0jet_mad_gg_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root"); //for doing unfolding
-  TFile* inputWW_GEN_mcnlo   = new TFile("files/WW_GEN_0jet_mcnlo_gg_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root"); //for doing unfolding
+  //TFile* inputWW_GEN_mad     = new TFile("files/WW_GEN_0jet_mad_gg_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root"); //for doing unfolding
+  //TFile* inputWW_GEN_mcnlo   = new TFile("files/WW_GEN_0jet_mcnlo_gg_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root"); //for doing unfolding
+
+
+
+  TFile* inputWW_GEN_pow     = new TFile("files/final/WW_GEN_0jet_gg_pow_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root");
+  TFile* inputWW_GEN_mad     = new TFile("files/final/WW_GEN_0jet_gg_mad_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root");
+  TFile* inputWW_GEN_mcnlo   = new TFile("files/final/WW_GEN_0jet_gg_mcnlo_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root");
+
 
 
   //----------------------------------------------------------------------------
@@ -696,7 +708,7 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
   
   TH1F *xsValue = (TH1F*) hNWW->Clone("xsValue");
 
-  Double_t xsUnfold_fid = 5.47; 
+  Double_t xsUnfold_fid = 5.17; 
   Double_t xsUnfold_fid_stat = 0.11; 
   Double_t xsUnfold_fid_syst = 0.18;  //removing everything that can cancell 
   Double_t xsUnfold_fid_err = 0.29; 
@@ -708,10 +720,6 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
     xsUnfold [ib] = NData[ib][0] / (luminosity * NData[ib][1] *BR_WW_to_lnln );  
     xsUnfold_stat [ib] = NData[ib][2] / (luminosity  * NData[ib][1] *BR_WW_to_lnln );
  
-    /*    double xsUnfold_stat_rel =  xsUnfold_stat[ib] / xsUnfold[ib]; 
-    double total_rel_error = sqrt ( xsUnfold_stat_rel*xsUnfold_stat_rel + (xsUnfold_fid_stat * xsUnfold_fid_stat/(xsUnfold_fid*xsUnfold_fid)));
-    double total_err = total_rel_error * xsUnfold [ib]/xsUnfold_fid;
-    */
 
     if (fiducial) { 
       xsValue->SetBinContent(ib+1, (xsUnfold[ib]/xsUnfold_fid));
