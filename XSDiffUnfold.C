@@ -64,8 +64,7 @@ enum {All, SF, OF, MuMu, EE, EMu, MuE};
 
 const UInt_t Nsyst =2;
 
-Double_t Syst_data [Nsyst] = {1.3, 2.9}; // in % systematics on the efficiency from { PDF, Luminosity}
-Double_t Syst_pow [Nsyst] = {0.0}; // in %
+Double_t Syst_data [Nsyst] = {0.0, 0.0}; // in % systematics on the efficiency from { PDF 1.3, Luminosity 2.9}
 
 
 // Wjets --> normalization 28%
@@ -195,7 +194,8 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 
 
 
-  TFile* inputWW_GEN_pow     = new TFile("files/final/WW_GEN_0jet_gg_pow_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root");
+  TFile* inputWW_GEN_pow     = new TFile("WW_tmp.root");
+					 //"files/final/WW_GEN_0jet_gg_pow_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root");
   TFile* inputWW_GEN_mad     = new TFile("files/final/WW_GEN_0jet_gg_mad_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root");
   TFile* inputWW_GEN_mcnlo   = new TFile("files/final/WW_GEN_0jet_gg_mcnlo_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root");
 
@@ -218,6 +218,8 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
   int kreg = 1; 
 
   TFile* syst;
+  TFile* syst_pow;
+
 
   if ( differential == 0 ) {
     distribution = "hPtLepton1WWLevel_Diff";
@@ -257,6 +259,7 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
     genDistribution = "hInclusive_GEN";
     kreg = 3; 
     syst = new TFile(systematics+"/syst_Inclusive.root");
+    syst_pow = new TFile("../141210_MCUncertainties_v0.9/mcuncert_pow_Inclusive.root");
     //syst = new TFile(systematics+"/syst_Inclusive_leptonEfficiency.root");
     //syst = new TFile(systematics+"/syst_Inclusive_JER.root");
     //syst = new TFile(systematics+"/syst_Inclusive_jetEnergyScale.root");
@@ -318,8 +321,8 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
   
   TH1F *WWdata = (TH1F*) hNData->Clone();
 
-  WWdata->Add(hNTT,-1.1);
-  WWdata->Add(hNTW,-1.1);
+  WWdata->Add(hNTT,-1.0);
+  WWdata->Add(hNTW,-1.0);
   WWdata->Add(hNWj,-1.0);
   WWdata->Add(hNWZ,-1.0);
   WWdata->Add(hNZZ,-1.0);
@@ -606,11 +609,14 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 
 
   TH1F* systUp;  TH1F* systDown;
+  TH1F* systUp_pow;  TH1F* systDown_pow;
   float backgError [bin]; 
 
   systUp    = (TH1F*) syst   ->Get("up");
   systDown  = (TH1F*) syst   ->Get("down");
 
+  systUp_pow    = (TH1F*) syst   ->Get("up");
+  systDown_pow  = (TH1F*) syst   ->Get("down");
 
 
   for (int ib=0; ib < bin; ib++) { 
@@ -666,10 +672,11 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
     for (UInt_t iSyst=0; iSyst<Nsyst; iSyst++) {
       
       NData[ib][3]+=(Syst_data [iSyst]*Syst_data [iSyst]);
-      NqqWW_pow [ib][3]+=(Syst_pow [iSyst]*Syst_pow [iSyst]);
       
     }
 
+
+    /// ----------------- ON DATA 
     float nom = h_dataReco_unfolded    ->GetBinContent(ib+1);
     float up = systUp->GetBinContent(ib+1);
     float down = systDown->GetBinContent(ib+1);
@@ -691,8 +698,39 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 
     float total = sqrt((NData[ib][3]/10000) + (maxErr*maxErr) + backgError [ib]*backgError [ib]); 
 
-    NData[ib][3]= total;
-    NqqWW_pow [ib][3]= sqrt(NqqWW_pow [ib][3])/100;
+    //float total = sqrt((NData[ib][3]/10000) +  backgError [ib]*backgError [ib]); 
+
+    NData[ib][3]= total; //relative error 
+
+    /// ----------------- 
+
+
+    /// ----------------- ON POWHEG
+
+    float nom_pow =  hNqqWW_pow   ->GetBinContent(ib+1);
+    float up_pow = systUp_pow->GetBinContent(ib+1);
+    float down_pow = systDown_pow->GetBinContent(ib+1);
+
+    if ( nom_pow  <= 0) continue;
+
+    float errUp_pow = up_pow / nom_pow;
+    float errDown_pow = down_pow / nom_pow;
+
+    float maxErr_pow = errUp_pow; 
+    
+    if (errUp_pow > errDown_pow) {
+      maxErr_pow = errUp_pow; 
+    } else {
+      maxErr_pow = errDown_pow; 
+    }
+
+    NqqWW_pow [ib][3]= maxErr_pow; //relative error 
+
+    /// ----------------- 
+
+
+
+
 
   }
 
@@ -708,9 +746,9 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
   
   TH1F *xsValue = (TH1F*) hNWW->Clone("xsValue");
 
-  Double_t xsUnfold_fid = 5.17; 
+  Double_t xsUnfold_fid = 5.24; 
   Double_t xsUnfold_fid_stat = 0.11; 
-  Double_t xsUnfold_fid_syst = 0.18;  //removing everything that can cancell 
+  Double_t xsUnfold_fid_syst = 0.21;  //removing everything that can cancell 
   Double_t xsUnfold_fid_err = 0.29; 
 
 
@@ -777,7 +815,7 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
   TH1F *xsValue_Powheg = (TH1F*) hNWW->Clone("xsValue_pow");
 
   Double_t xsPowheg_fid = 5.29;  
-  Double_t xsPowheg_fid_err = 0.02; // only statistical 
+  Double_t xsPowheg_fid_err = 0.03; //  statistical + systematics
 
 
 
@@ -786,7 +824,7 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
     xsPowheg[ib] = NqqWW_pow [ib][0] / (luminosity  * NqqWW_pow[ib][1] *BR_WW_to_lnln);
     xsPowheg_stat[ib] = NqqWW_pow [ib][2] / (luminosity * NqqWW_pow[ib][1] *BR_WW_to_lnln);
 
-    xsPowheg_tot[ib] = sqrt(NqqWW_pow [ib][3]*NqqWW_pow [ib][3]+xsPowheg_stat[ib]*xsPowheg_stat[ib]);
+    xsPowheg_tot[ib] = sqrt(NqqWW_pow [ib][3]*NqqWW_pow [ib][3]*xsPowheg[ib]*xsPowheg[ib]+xsPowheg_stat[ib]*xsPowheg_stat[ib]);
 
     /*    double xsPowheg_stat_rel =  xsPowheg_stat[ib] / xsPowheg[ib]; 
     double total_rel_error = sqrt ( xsPowheg_stat_rel*xsPowheg_stat_rel + (xsPowheg_fid_err * xsPowheg_fid_err/(xsPowheg_fid*xsPowheg_fid)));
@@ -925,7 +963,7 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 	Double_t binError = 0;
 
 	float value = xsValue->GetBinContent(i);
-	float error = xsValue->GetBinError(i)/value;
+	float error = xsValue->GetBinError(i)/value;  // --> only relative statistical error 
 	
        	float totalError = sqrt(NData[i-1][3]*NData[i-1][3] + error*error);
 
@@ -1105,7 +1143,36 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 	output->Close();
       }
 
-
+      if (differential == 1 ) {
+	TFile* output = new TFile("XSDileptonPt_AN.root", "update");
+	output->cd();
+	xsValue->Write("xsValue", TObject::kWriteDelete );
+	xsValue_Powheg->Write("xsValue_Powheg", TObject::kWriteDelete );
+	xsValue_Madgraph->Write("xsValue_Madgraph", TObject::kWriteDelete );
+	xsValue_MCnlo->Write("xsValue_MCnlo", TObject::kWriteDelete );
+	systHisto->Write("systHisto", TObject::kWriteDelete );
+	output->Close();
+      }
+      if (differential == 2 ) {
+	TFile* output = new TFile("XSMll_AN.root", "update");
+	output->cd();
+	xsValue->Write("xsValue", TObject::kWriteDelete );
+	xsValue_Powheg->Write("xsValue_Powheg", TObject::kWriteDelete );
+	xsValue_Madgraph->Write("xsValue_Madgraph", TObject::kWriteDelete );
+	xsValue_MCnlo->Write("xsValue_MCnlo", TObject::kWriteDelete );
+	systHisto->Write("systHisto", TObject::kWriteDelete );
+	output->Close();
+      }
+      if (differential == 3 ) {
+	TFile* output = new TFile("XSDeltaPhi_AN.root", "update");
+	output->cd();
+	xsValue->Write("xsValue", TObject::kWriteDelete );
+	xsValue_Powheg->Write("xsValue_Powheg", TObject::kWriteDelete );
+	xsValue_Madgraph->Write("xsValue_Madgraph", TObject::kWriteDelete );
+	xsValue_MCnlo->Write("xsValue_MCnlo", TObject::kWriteDelete );
+	systHisto->Write("systHisto", TObject::kWriteDelete );
+	output->Close();
+      }
   }
   
  
