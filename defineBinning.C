@@ -71,8 +71,8 @@ void defineBinning(Int_t   jetChannel = 0 , TString theSample = "WW", Bool_t jet
 
 
   //-*** Final for data 
-  //tree->Add("/gpfs/csic_projects/cms/calderon/WWGEN/finalFilesForData/latino006_nll_ewk.root"); // POW 
-  tree->Add("/gpfs/csic_projects/cms/calderon/WWGEN/finalFilesForData/latino_001_GGWWJets_jetSmear_METxy.root"); // GG
+  tree->Add("/gpfs/csic_projects/cms/calderon/WWGEN/finalFilesForData/latino006_nll_ewk.root"); // POW 
+  //tree->Add("/gpfs/csic_projects/cms/calderon/WWGEN/finalFilesForData/latino_001_GGWWJets_jetSmear_METxy.root"); // GG
   //tree->Add("/gpfs/csic_projects/cms/calderon/WWGEN/finalFilesForData/latino000_nll_ewk.root"); // MAD
   //tree->Add("/gpfs/csic_projects/cms/calderon/WWGEN/finalFilesForData/latino002_nll_ewk.root"); // MCNLO
 
@@ -89,7 +89,7 @@ void defineBinning(Int_t   jetChannel = 0 , TString theSample = "WW", Bool_t jet
   //  TString path = Form("_GEN_%djet_pow_full.root",  jetChannel); 0,0.25,0.5,0.75,1,1.25,1.5,1.75,2,
   //TString path = Form("_GEN_0jet_mcnlo_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root"); 
   //TString path = Form("_GEN_0jet_gg_full_JetGenVeto_Eff_NewLumi.root");
-  TString path = Form("_gg_tmp.root");
+  TString path = Form("_pow_tmp.root");
 
   TFile* output = new TFile( theSample+path, "recreate");
 
@@ -365,8 +365,8 @@ void defineBinning(Int_t   jetChannel = 0 , TString theSample = "WW", Bool_t jet
     tree->GetEntry(ievent);
 
     //Double_t mybaseW =  5984.0/1933235;//5812.3/1933235; // madgraph (1933232)
-    //Double_t mybaseW = 5984.0/999864;//  5812.3/999864; // powheg (999860)
-    Double_t mybaseW = 182.852 /109986; // GGWW 
+    Double_t mybaseW = 5984.0/999864;//  5812.3/999864; // powheg (999860)
+    //Double_t mybaseW = 182.852 /109986; // GGWW 
     //Double_t mybaseW = 5984.0/539594; //5812.3/539594; // mcnlo
 
 

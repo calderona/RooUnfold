@@ -236,6 +236,7 @@ void Unfolded(TString variable = "p_{T,max}^{#font[12]{l}}",
   AxisFontsRatio(ratioErr->GetYaxis(), "y", "Theory / Data");
   AxisFontsRatio(ratioErr->GetXaxis(), "x", variable + " (GeV)");
 
+  //  canvas.SetGrayscale();
 
   // Draw pad2
   //----------------------------------------------------------------------------
