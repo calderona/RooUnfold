@@ -64,7 +64,7 @@ enum {All, SF, OF, MuMu, EE, EMu, MuE};
 
 const UInt_t Nsyst =2;
 
-Double_t Syst_data [Nsyst] = {0.0, 0.0}; // in % systematics on the efficiency from { PDF 1.3, Luminosity 2.9}
+Double_t Syst_data [Nsyst] = {1.3, 2.9}; // in % systematics on the efficiency from { PDF 1.3, Luminosity 2.9}
 
 
 // Wjets --> normalization 28%
@@ -90,8 +90,8 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 		  Bool_t    fiducial = true, 
 		  Int_t     differential = 3,
 		  Bool_t    drawTheXS = true,
-		  Bool_t    drawRatio = 1,
-		  Int_t     verbose = 1,
+		  Bool_t    drawRatio = true,
+		  Int_t     verbose = 0,
 		  Bool_t    useOvf = 1
 	   )
 
@@ -194,8 +194,7 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 
 
 
-  TFile* inputWW_GEN_pow     = new TFile("WW_tmp.root");
-					 //"files/final/WW_GEN_0jet_gg_pow_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root");
+  TFile* inputWW_GEN_pow     = new TFile("files/final/WW_GEN_0jet_gg_pow_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root");
   TFile* inputWW_GEN_mad     = new TFile("files/final/WW_GEN_0jet_gg_mad_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root");
   TFile* inputWW_GEN_mcnlo   = new TFile("files/final/WW_GEN_0jet_gg_mcnlo_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root");
 
@@ -219,7 +218,7 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 
   TFile* syst;
   TFile* syst_pow;
-
+  TFile* syst_mc;
 
   if ( differential == 0 ) {
     distribution = "hPtLepton1WWLevel_Diff";
@@ -227,6 +226,8 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
     genDistribution = "hPtLepton1_GEN";
     kreg = 3;
     syst = new TFile(systematics+"/syst_PtLepton1.root"); 
+    syst_pow = new TFile("141210_MCUncertainties_v0.9/mcuncert_pow_PtLepton1.root");
+    syst_mc = new TFile("141210_MCUncertainties_v0.9/mcuncert_mcnlo_PtLepton1.root");
   }
 
   if ( differential == 1 ) {
@@ -235,6 +236,8 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
     genDistribution = "hDilepton_GEN";
     kreg = 3;
     syst = new TFile(systematics+"/syst_Dilepton.root"); 
+    syst_pow = new TFile("141210_MCUncertainties_v0.9/mcuncert_pow_Dilepton.root");
+    syst_mc = new TFile("141210_MCUncertainties_v0.9/mcuncert_mcnlo_Dilepton.root");
   }
   
   if ( differential == 2 ) {
@@ -243,6 +246,8 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
     genDistribution = "hmll_GEN";
     kreg = 4;  
     syst = new TFile(systematics+"/syst_mll.root");
+    syst_pow = new TFile("141210_MCUncertainties_v0.9/mcuncert_pow_mll.root");
+    syst_mc = new TFile("141210_MCUncertainties_v0.9/mcuncert_mcnlo_mll.root");
 }
 
   if ( differential == 3 ) {
@@ -251,6 +256,8 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
     genDistribution = "hdphi_GEN";
     kreg = 3; 
     syst = new TFile(systematics+"/syst_dphi.root");
+    syst_pow = new TFile("141210_MCUncertainties_v0.9/mcuncert_pow_dphi.root");
+    syst_mc = new TFile("141210_MCUncertainties_v0.9/mcuncert_mcnlo_dphi.root");
   }
 
   if ( differential == 6 ) {
@@ -259,7 +266,8 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
     genDistribution = "hInclusive_GEN";
     kreg = 3; 
     syst = new TFile(systematics+"/syst_Inclusive.root");
-    syst_pow = new TFile("../141210_MCUncertainties_v0.9/mcuncert_pow_Inclusive.root");
+    syst_pow = new TFile("141210_MCUncertainties_v0.9/mcuncert_pow_Inclusive.root");
+    syst_mc = new TFile("141210_MCUncertainties_v0.9/mcuncert_mcnlo_Inclusive.root");
     //syst = new TFile(systematics+"/syst_Inclusive_leptonEfficiency.root");
     //syst = new TFile(systematics+"/syst_Inclusive_JER.root");
     //syst = new TFile(systematics+"/syst_Inclusive_jetEnergyScale.root");
@@ -610,13 +618,18 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 
   TH1F* systUp;  TH1F* systDown;
   TH1F* systUp_pow;  TH1F* systDown_pow;
+  TH1F* systUp_mc;  TH1F* systDown_mc;
+
   float backgError [bin]; 
 
   systUp    = (TH1F*) syst   ->Get("up");
   systDown  = (TH1F*) syst   ->Get("down");
 
-  systUp_pow    = (TH1F*) syst   ->Get("up");
-  systDown_pow  = (TH1F*) syst   ->Get("down");
+  systUp_pow    = (TH1F*) syst_pow   ->Get("up");
+  systDown_pow  = (TH1F*) syst_pow   ->Get("down");
+
+  systUp_mc    = (TH1F*) syst_mc   ->Get("up");
+  systDown_mc  = (TH1F*) syst_mc   ->Get("down");
 
 
   for (int ib=0; ib < bin; ib++) { 
@@ -729,7 +742,29 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
     /// ----------------- 
 
 
+ /// ----------------- ON MCNLO
 
+    float nom_mc =  hNqqWW_mcnlo   ->GetBinContent(ib+1);
+    float up_mc = systUp_mc->GetBinContent(ib+1);
+    float down_mc = systDown_mc->GetBinContent(ib+1);
+
+    if ( nom_mc  <= 0) continue;
+
+    float errUp_mc = up_mc / nom_mc;
+    float errDown_mc = down_mc / nom_mc;
+
+    float maxErr_mc = errUp_mc; 
+    
+    if (errUp_mc > errDown_mc) {
+      maxErr_mc = errUp_mc; 
+    } else {
+      maxErr_mc = errDown_mc; 
+    }
+
+    NqqWW_mcnlo [ib][3]= maxErr_mc; //relative error 
+
+   
+    /// ----------------- 
 
 
   }
@@ -847,6 +882,7 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
   Double_t xsMCnlo[bin];
 
   Double_t xsMCnlo_stat[bin];
+  Double_t xsMCnlo_tot[bin];
 
   TH1F *xsValue_MCnlo = (TH1F*) hNWW->Clone("xsValue_mcnlo");
 
@@ -860,6 +896,7 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
     
     xsMCnlo[ib] = NqqWW_mcnlo [ib][0] / (luminosity  * NqqWW_mcnlo[ib][1] *BR_WW_to_lnln);
     xsMCnlo_stat[ib] = NqqWW_mcnlo [ib][2] / (luminosity  * NqqWW_mcnlo[ib][1] *BR_WW_to_lnln);
+    xsMCnlo_tot[ib] = sqrt(NqqWW_mcnlo [ib][3]*NqqWW_mcnlo [ib][3]*xsMCnlo[ib]*xsMCnlo[ib]+xsMCnlo_stat[ib]*xsMCnlo_stat[ib]);
 
     /* double xsMCnlo_stat_rel =  xsMCnlo_stat[ib] / xsMCnlo[ib]; 
     double total_rel_error = sqrt ( xsMCnlo_stat_rel*xsMCnlo_stat_rel + (xsMCnlo_fid_err * xsMCnlo_fid_err/(xsMCnlo_fid*xsMCnlo_fid)));
@@ -868,7 +905,7 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 
     if (fiducial ) {
       xsValue_MCnlo->SetBinContent(ib+1, (xsMCnlo [ib]/xsMCnlo_fid));
-      xsValue_MCnlo->SetBinError(ib+1, (xsMCnlo_stat [ib]/xsMCnlo_fid));
+      xsValue_MCnlo->SetBinError(ib+1, (xsMCnlo_tot [ib]/xsMCnlo_fid));
     } else {
       xsValue_MCnlo->SetBinContent(ib+1, xsMCnlo [ib]);
       xsValue_MCnlo->SetBinError(ib+1, xsMCnlo_stat [ib]);
