@@ -71,8 +71,8 @@ void defineBinning(Int_t   jetChannel = 0 , TString theSample = "WW", Bool_t jet
 
 
   //-*** Final for data 
-  tree->Add("/gpfs/csic_projects/cms/calderon/WWGEN/finalFilesForData/latino006_nll_ewk.root"); // POW 
-  //tree->Add("/gpfs/csic_projects/cms/calderon/WWGEN/finalFilesForData/latino_001_GGWWJets_jetSmear_METxy.root"); // GG
+  //tree->Add("/gpfs/csic_projects/cms/calderon/WWGEN/finalFilesForData/latino006_nll_ewk.root"); // POW 
+  tree->Add("/gpfs/csic_projects/cms/calderon/WWGEN/finalFilesForData/latino_001_GGWWJets_jetSmear_METxy.root"); // GG
   //tree->Add("/gpfs/csic_projects/cms/calderon/WWGEN/finalFilesForData/latino000_nll_ewk.root"); // MAD
   //tree->Add("/gpfs/csic_projects/cms/calderon/WWGEN/finalFilesForData/latino002_nll_ewk.root"); // MCNLO
 
@@ -86,10 +86,10 @@ void defineBinning(Int_t   jetChannel = 0 , TString theSample = "WW", Bool_t jet
   // Output files
   //----------------------------------------------------------------------------
   
-  //  TString path = Form("_GEN_%djet_pow_full.root",  jetChannel); 0,0.25,0.5,0.75,1,1.25,1.5,1.75,2,
-  //TString path = Form("_GEN_0jet_mcnlo_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root"); 
-  //TString path = Form("_GEN_0jet_gg_full_JetGenVeto_Eff_NewLumi.root");
-  TString path = Form("_pow_tmp.root");
+  //TString path = Form("_GEN_0jet_pow_full.root",  jetChannel); 0,0.25,0.5,0.75,1,1.25,1.5,1.75,2,
+  //TString path = Form("_GEN_0jet_mcnlo_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi_NoPU_newMiss.root"); 
+  TString path = Form("_GEN_0jet_gg_full_JetGenVeto_Eff_NewLumi_NoPU_newMiss.root");
+  //TString path = Form("_gg_tmp.root");
 
   TFile* output = new TFile( theSample+path, "recreate");
 
@@ -263,7 +263,7 @@ void defineBinning(Int_t   jetChannel = 0 , TString theSample = "WW", Bool_t jet
   
 
   // Apply NNLL resummation 
-  Float_t nllW = 1; tree->SetBranchAddress("nllW", &nllW);
+  Float_t nllW = 1; //tree->SetBranchAddress("nllW", &nllW);
 
 // GEN info... 
 
@@ -365,22 +365,22 @@ void defineBinning(Int_t   jetChannel = 0 , TString theSample = "WW", Bool_t jet
     tree->GetEntry(ievent);
 
     //Double_t mybaseW =  5984.0/1933235;//5812.3/1933235; // madgraph (1933232)
-    Double_t mybaseW = 5984.0/999864;//  5812.3/999864; // powheg (999860)
-    //Double_t mybaseW = 182.852 /109986; // GGWW 
+    //Double_t mybaseW = 5984.0/999864;//  5812.3/999864; // powheg (999860)
+    Double_t mybaseW = 182.852 /109986; // GGWW 
     //Double_t mybaseW = 5984.0/539594; //5812.3/539594; // mcnlo
 
 
 
     Float_t luminosity = 19.365;
 
-    Double_t efficiencyW =  effW * triggW ;
+    Double_t efficiencyW =  effW * triggW * puW;
     // Double_t totalW = effW * triggW * baseW * efficiencyW * luminosity;
 
     Double_t totalW = puW * mybaseW * luminosity;//efficiencyW;
 
-    Double_t totalWGen = nllW *  puW *  mybaseW * luminosity ;
+    Double_t totalWGen = nllW *  mybaseW * luminosity ; //Removing PU from gen level
     
-    Double_t totalWReco =  effW * triggW * nllW * puW *  mybaseW * luminosity;// * effW * triggW ;//puW *  mybaseW * luminosity;//puW * effW * triggW * mybaseW * luminosity;
+    Double_t totalWReco =  effW * triggW * puW * nllW *  mybaseW * luminosity;// * effW * triggW ;//puW *  mybaseW * luminosity;//puW * effW * triggW * mybaseW * luminosity;
 
   
     // The GEN selection begins here
@@ -484,7 +484,8 @@ void defineBinning(Int_t   jetChannel = 0 , TString theSample = "WW", Bool_t jet
 
 
     
-    if  (genEvent) {
+    if  (genEvent ) {
+
       hPtLepton1_GEN->Fill(lepGenpt1, totalWGen);//*baseW*luminosity*0.00300652); // leading pt ---> which pt should I store here? 
     
       hDilepton_GEN->Fill(dileptonGenPt,totalWGen); // ptll 
@@ -626,13 +627,23 @@ void defineBinning(Int_t   jetChannel = 0 , TString theSample = "WW", Bool_t jet
 	
 	//---- Fill response matrix ( we have always with our selection 2 gen leptons and 2 reco leptons)
 	if  (genEvent) {
+
 	  responsePtLepton1.Fill(pt1, lepGenpt1, totalWReco);
 	  responseDilepton.Fill(dileptonPt, dileptonGenPt, totalWReco);
 	  responseMll.Fill(mll, mllGen, totalWReco);
 	  responseDphi.Fill(dphill, dphiGen, totalWReco);
 	  responseInclusive.Fill(1, 1, totalWReco);
-	} else {
 
+
+	  responsePtLepton1.Miss(lepGenpt1, (1-efficiencyW)*totalWGen );
+	  responseDilepton.Miss(dileptonGenPt, (1-efficiencyW)*totalWGen);
+	  responseMll.Miss(mllGen, (1-efficiencyW)*totalWGen);
+	  responseDphi.Miss(dphiGen, (1-efficiencyW)*totalWGen);
+	  responseInclusive.Miss(1, (1-efficiencyW)*totalWGen);
+	  
+
+
+	} else {
 	  
 	  responsePtLepton1.Fake(pt1, totalWReco);
 	  responseDilepton.Fake(dileptonPt, totalWReco);
