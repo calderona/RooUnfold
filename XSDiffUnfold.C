@@ -194,9 +194,9 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
 
 
 
-  TFile* inputWW_GEN_pow     = new TFile("files/final/WW_GEN_0jet_gg_pow_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root");
-  TFile* inputWW_GEN_mad     = new TFile("files/final/WW_GEN_0jet_gg_mad_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root");
-  TFile* inputWW_GEN_mcnlo   = new TFile("files/final/WW_GEN_0jet_gg_mcnlo_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi.root");
+  TFile* inputWW_GEN_pow     = new TFile("files/final/WW_GEN_0jet_gg_pow_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi_NoPU_newMiss.root");
+  TFile* inputWW_GEN_mad     = new TFile("files/final/WW_GEN_0jet_gg_mad_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi_NoPU_newMiss.root");
+  TFile* inputWW_GEN_mcnlo   = new TFile("files/final/WW_GEN_0jet_gg_mcnlo_full_NNLL_JetGenVeto_Eff_NNLOXsec_NewLumi_NoPU_newMiss.root");
 
 
 
@@ -781,9 +781,9 @@ void XSDiffUnfold(Double_t  luminosity = 19365,
   
   TH1F *xsValue = (TH1F*) hNWW->Clone("xsValue");
 
-  Double_t xsUnfold_fid = 5.24; 
+  Double_t xsUnfold_fid = 5.36; 
   Double_t xsUnfold_fid_stat = 0.11; 
-  Double_t xsUnfold_fid_syst = 0.21;  //removing everything that can cancell 
+  Double_t xsUnfold_fid_syst = 0.24;  //removing everything that can cancell 
   Double_t xsUnfold_fid_err = 0.29; 
 
 
